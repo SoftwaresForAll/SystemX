@@ -42,5 +42,8 @@ Ensure /etc/systemx.conf exists and has valid lines
 Check kernel logs (dmesg) for messages
 Confirm target service executables exist and are executable
 
+the goal of this project is just a reliable stable and simple easy to use PID 1 for my personal needs. you are free to star . fork . talk about this project since the main goal isn't challenging feature rich or widly use complex PID's like systemd .
+but thank you for taking time from your day to read . clone or even test this project. !
+
 License
 MIT License. See LICENSE
