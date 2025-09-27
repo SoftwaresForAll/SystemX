@@ -6,8 +6,15 @@ LD      ?= ld
 STRIP   ?= strip
 
 # Flags
-ASFLAGS ?= -f elf64 -g -F dwarf
+ASFLAGS ?= -f elf64
 LDFLAGS ?= -m elf_x86_64 -nostdlib -static
+
+# Optional debug info (some NASM builds don't support '-F dwarf')
+ifeq ($(DEBUG),1)
+  ASFLAGS += -g
+  # Enable DWARF debug format only if NASM supports it in your environment
+  ASFLAGS += -F dwarf
+endif
 
 # Project
 TARGET  ?= init
