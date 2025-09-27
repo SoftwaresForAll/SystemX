@@ -412,6 +412,12 @@ global _start
 %define LINUX_REBOOT_CMD_RESTART 0x1234567
 %define LINUX_REBOOT_CMD_POWER_OFF 0x4321fedc
 
+; Offsets for struct rt_sigaction (userspace layout)
+%define SA_HANDLER   0      ; pointer
+%define SA_FLAGS     8      ; unsigned long
+%define SA_RESTORER  16     ; pointer (unused)
+%define SA_MASK      24     ; 128-bit signal mask (16 bytes)
+
 struc sigaction
     sa_handler resq 1
     sa_flags resq 1
@@ -759,11 +765,11 @@ service_fork_error:
 
 signal_handler_setup:
     ; install SIGCHLD handler
-    mov qword [sigaction_buffer + sigaction.sa_handler], handle_sigchld
-    mov qword [sigaction_buffer + sigaction.sa_flags], SA_RESTART
+    mov qword [sigaction_buffer + SA_HANDLER], handle_sigchld
+    mov qword [sigaction_buffer + SA_FLAGS], SA_RESTART
     xor rax, rax
-    mov qword [sigaction_buffer + sigaction.sa_mask], rax
-    mov qword [sigaction_buffer + sigaction.sa_mask + 8], rax
+    mov qword [sigaction_buffer + SA_MASK], rax
+    mov qword [sigaction_buffer + SA_MASK + 8], rax
     mov rax, SYS_rt_sigaction
     mov rdi, SIGCHLD
     mov rsi, sigaction_buffer
@@ -772,8 +778,8 @@ signal_handler_setup:
     syscall
 
     ; install SIGTERM handler
-    mov qword [sigaction_buffer + sigaction.sa_handler], handle_sigterm
-    mov qword [sigaction_buffer + sigaction.sa_flags], SA_RESTART
+    mov qword [sigaction_buffer + SA_HANDLER], handle_sigterm
+    mov qword [sigaction_buffer + SA_FLAGS], SA_RESTART
     mov rax, SYS_rt_sigaction
     mov rdi, SIGTERM
     mov rsi, sigaction_buffer
@@ -782,8 +788,8 @@ signal_handler_setup:
     syscall
 
     ; install SIGINT handler (treat like SIGTERM)
-    mov qword [sigaction_buffer + sigaction.sa_handler], handle_sigterm
-    mov qword [sigaction_buffer + sigaction.sa_flags], SA_RESTART
+    mov qword [sigaction_buffer + SA_HANDLER], handle_sigterm
+    mov qword [sigaction_buffer + SA_FLAGS], SA_RESTART
     mov rax, SYS_rt_sigaction
     mov rdi, SIGINT
     mov rsi, sigaction_buffer
@@ -792,8 +798,8 @@ signal_handler_setup:
     syscall
 
     ; install SIGHUP handler (reload)
-    mov qword [sigaction_buffer + sigaction.sa_handler], handle_sighup
-    mov qword [sigaction_buffer + sigaction.sa_flags], SA_RESTART
+    mov qword [sigaction_buffer + SA_HANDLER], handle_sighup
+    mov qword [sigaction_buffer + SA_FLAGS], SA_RESTART
     mov rax, SYS_rt_sigaction
     mov rdi, SIGHUP
     mov rsi, sigaction_buffer
@@ -913,10 +919,9 @@ start_fallback_shell:
     mov rdi, 1
     syscall
 
-SECTION .data
+SECTION .bss
 service_name_ptr resq 1
 service_name_len resq 1
 service_cmd_ptr resq 1
 service_cmd_len resq 1
-SECTION .bss
-sh_argv resq 4
+sh_argv         resq 4
