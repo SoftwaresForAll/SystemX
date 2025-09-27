@@ -1,7 +1,8 @@
 # SystemX Init Makefile
 
 # Tools
-AS      ?= nasm
+SHELL   := /bin/sh
+NASM    ?= nasm
 LD      ?= ld
 STRIP   ?= strip
 
@@ -34,7 +35,7 @@ $(TARGET): $(OBJ)
 	$(STRIP) -s $@ || true
 
 %.o: %.s
-	$(AS) $(ASFLAGS) -o $@ $<
+	$(NASM) $(ASFLAGS) -o $@ $<
 
 clean:
 	rm -f $(OBJ) $(TARGET)
