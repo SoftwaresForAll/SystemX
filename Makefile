@@ -35,21 +35,22 @@ $(TARGET): $(OBJ)
 	$(STRIP) -s $@ || true
 
 %.o: %.s
-	$(NASM) $(ASFLAGS) -o $@ $<
-
 clean:
 	rm -f $(OBJ) $(TARGET)
 
 install: $(TARGET)
-	@echo "Installing $(TARGET) to $(DESTDIR)$(SBIN_DIR)/init"
+	@echo "Installing safely to $(DESTDIR)$(SBIN_DIR)/init.systemx"
+	install -d "$(DESTDIR)$(SBIN_DIR)"
+	install -m 0755 "$(TARGET)" "$(DESTDIR)$(SBIN_DIR)/init.systemx"
+	@echo "Place your config at $(DESTDIR)$(ETC_DIR)/systemx.conf"
+
+install-as-init: $(TARGET)
+	@echo "Replacing /sbin/init (DANGEROUS). Make sure you know what you're doing."
 	install -d "$(DESTDIR)$(SBIN_DIR)"
 	install -m 0755 "$(TARGET)" "$(DESTDIR)$(SBIN_DIR)/init"
-	@echo "Optionally place your config at $(DESTDIR)$(ETC_DIR)/systemx.conf"
 
 uninstall:
 	@echo "Removing $(DESTDIR)$(SBIN_DIR)/init if it is ours (be careful)"
 	-rm -f "$(DESTDIR)$(SBIN_DIR)/init"
-
-rebuild: clean all
 
 .PHONY: all clean install uninstall rebuild

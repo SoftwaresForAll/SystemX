@@ -1,13 +1,24 @@
 SystemX - Simple Linux init (PID 1)
 
 Overview
-SystemX is a small init system written entirely in 64-bit assembly for Linux. It runs as PID 1, mounts basic filesystems, reads /etc/systemx.conf, starts services, supervises them, and handles shutdown and reload signals. If no services are configured, it starts a fallback shell to avoid boot lockout.
+# SystemX
 
-Build
-Requirements: nasm and binutils (ld, strip)
-Build command: make
+> **WARNING: USE AT YOUR OWN RISK!!!**
+> 
+> This is experimental software. By using SystemX, you acknowledge that:
+> 
+> - **You are responsible** for any data loss, system instability, or damage.
+> - The SoftwaresForAll Foundation and contributors **are not liable** for any issues arising from the use of this software.
+> - Always test in a virtual machine or on non-critical hardware first.
+> - Keep a recovery method (live USB, backup, etc.) available.
+> - The default installation is now safer (`/sbin/init.systemx`), but replacing `/sbin/init` is **high-risk**.
+> - If unsure, consult a professional before proceeding.
+> - **This Software is fully tested** any damage will probably be due to your own actions. unless it's a problem from our side please do not open an issue or ask for refund of any damages. this software is made to be used by professionals.
+> - **if you think it's a problem from our side you are free to open an issue or ask for refund of any damages. since we trust our softwares to work in any env. but opening false issues will just be a desperated waste of time**
+> 
+> ---
 
-Install
+A minimal Linux init system written in x86_64 assembly. in 64-bit assembly for Linux. It runs as PID 1, mounts basic filesystems, reads /etc/systemx.conf, starts services, supervises them, and handles shutdown and reload signals. If no services are configured, it starts a fallback shell to avoid boot lockout.
 Install command: sudo make install
 This installs the binary to /sbin/init
 Optional staging: make DESTDIR=/path install

@@ -497,11 +497,9 @@ SECTION .text
 
 _start:
     mov rbp, rsp
-    ; zero child_count
     xor rax, rax
     mov [child_count], rax
 
-    ; ensure running as PID 1
     mov rax, SYS_getpid
     syscall
     cmp rax, 1
@@ -511,12 +509,21 @@ _start:
     call mount_filesystems
     call parse_config
     call signal_handler_setup
-    ; if no services started, start fallback shell
+    mov rax, SYS_write
+    mov rdi, 1
+    mov rsi, msg_start
+    mov rdx, 25
+    syscall
     mov rax, [child_count]
     cmp rax, 0
     jne .skip_fallback
     call start_fallback_shell
 .skip_fallback:
+    mov rax, SYS_write
+    mov rdi, 1
+    mov rsi, msg_ready
+    mov rdx, 19
+    syscall
     call main_loop
 
 not_pid1:
@@ -540,40 +547,57 @@ setup_environment:
     mov rdi, dev_console
     mov rsi, O_RDWR
     syscall
+    cmp rax, 0
+    jl .open_null
     mov rbx, rax
-
     mov rax, SYS_dup2
     mov rdi, rbx
     mov rsi, 0
     syscall
-
     mov rax, SYS_dup2
     mov rdi, rbx
     mov rsi, 1
     syscall
-
     mov rax, SYS_dup2
     mov rdi, rbx
     mov rsi, 2
     syscall
-
     mov rax, SYS_close
     mov rdi, rbx
     syscall
-
+    ret
+.open_null:
+    mov rax, SYS_open
+    mov rdi, dev_null
+    mov rsi, O_RDWR
+    syscall
+    mov rbx, rax
+    mov rax, SYS_dup2
+    mov rdi, rbx
+    mov rsi, 0
+    syscall
+    mov rax, SYS_dup2
+    mov rdi, rbx
+    mov rsi, 1
+    syscall
+    mov rax, SYS_dup2
+    mov rdi, rbx
+    mov rsi, 2
+    syscall
+    mov rax, SYS_close
+    mov rdi, rbx
+    syscall
     ret
 
 mount_filesystems:
-    ; mount -t proc proc /proc
     mov rax, SYS_mount
-    mov rdi, sys_fs_proc         ; source
-    mov rsi, mount_proc          ; target
-    mov rdx, sys_fs_proc         ; fstype
-    mov r10, 0                   ; flags
-    mov r8, 0                    ; data
+    mov rdi, sys_fs_proc
+    mov rsi, mount_proc
+    mov rdx, sys_fs_proc
+    mov r10, 0
+    mov r8, 0
     syscall
 
-    ; mount -t sysfs sysfs /sys
     mov rax, SYS_mount
     mov rdi, sys_fs_sysfs
     mov rsi, mount_sys
@@ -582,7 +606,6 @@ mount_filesystems:
     mov r8, 0
     syscall
 
-    ; mount -t devtmpfs devtmpfs /dev
     mov rax, SYS_mount
     mov rdi, sys_fs_devtmpfs
     mov rsi, mount_dev
@@ -590,8 +613,17 @@ mount_filesystems:
     mov r10, 0
     mov r8, 0
     syscall
+    cmp rax, 0
+    jge .dev_ok
+    mov rax, SYS_mount
+    mov rdi, sys_fs_tmpfs
+    mov rsi, mount_dev
+    mov rdx, sys_fs_tmpfs
+    mov r10, 0
+    mov r8, 0
+    syscall
+.dev_ok:
 
-    ; mount -t tmpfs tmpfs /run
     mov rax, SYS_mount
     mov rdi, sys_fs_tmpfs
     mov rsi, mount_run
@@ -600,7 +632,6 @@ mount_filesystems:
     mov r8, 0
     syscall
 
-    ; mount -t tmpfs tmpfs /tmp
     mov rax, SYS_mount
     mov rdi, sys_fs_tmpfs
     mov rsi, mount_tmp
