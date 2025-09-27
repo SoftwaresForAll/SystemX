@@ -564,42 +564,47 @@ setup_environment:
     ret
 
 mount_filesystems:
+    ; mount -t proc proc /proc
     mov rax, SYS_mount
-    mov rdi, sys_fs_proc
-    mov rsi, mount_proc
-    mov rdx, mount_none
-    mov r10, 0
-    mov r8, 0
+    mov rdi, sys_fs_proc         ; source
+    mov rsi, mount_proc          ; target
+    mov rdx, sys_fs_proc         ; fstype
+    mov r10, 0                   ; flags
+    mov r8, 0                    ; data
     syscall
 
+    ; mount -t sysfs sysfs /sys
     mov rax, SYS_mount
     mov rdi, sys_fs_sysfs
     mov rsi, mount_sys
-    mov rdx, mount_none
+    mov rdx, sys_fs_sysfs
     mov r10, 0
     mov r8, 0
     syscall
 
+    ; mount -t devtmpfs devtmpfs /dev
     mov rax, SYS_mount
     mov rdi, sys_fs_devtmpfs
     mov rsi, mount_dev
-    mov rdx, mount_none
+    mov rdx, sys_fs_devtmpfs
     mov r10, 0
     mov r8, 0
     syscall
 
+    ; mount -t tmpfs tmpfs /run
     mov rax, SYS_mount
     mov rdi, sys_fs_tmpfs
     mov rsi, mount_run
-    mov rdx, mount_none
+    mov rdx, sys_fs_tmpfs
     mov r10, 0
     mov r8, 0
     syscall
 
+    ; mount -t tmpfs tmpfs /tmp
     mov rax, SYS_mount
     mov rdi, sys_fs_tmpfs
     mov rsi, mount_tmp
-    mov rdx, mount_none
+    mov rdx, sys_fs_tmpfs
     mov r10, 0
     mov r8, 0
     syscall
