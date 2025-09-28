@@ -1,6 +1,3 @@
-SystemX - Simple Linux init (PID 1)
-
-Overview
 # SystemX
 
 > **WARNING: USE AT YOUR OWN RISK!!!**
